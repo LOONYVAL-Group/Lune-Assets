@@ -1,0 +1,41 @@
+name: Upload Assets Release
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      - name: Pull LFS Files
+        run: git lfs pull
+
+      - name: Zip Folder
+        run: |
+          zip -r -9 Assets.zip . \
+          -x "*.git*" \
+          ".github*" \
+          "README.md" \
+          "readme.md" \
+          "LICENSE*" \
+          ".gitignore"
+
+      - name: Upload Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Assets.zip
+          tag_name: latest
+          name: Latest Assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
